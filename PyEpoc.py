@@ -28,7 +28,7 @@
 # \li #INPUTCHANNELS
 # \li #CONTACTQUALITY
 #
-# 
+#
 # @version \b PyEpoc 1.2
 # @copyright Copyright 2009 Morten André Steinsland. \n\n
 # @author Morten André Steinsland \n
@@ -165,7 +165,7 @@ AFFECTIVALGO = {'AFF_EXCITEMENT'        : 0x0001,
 # EE_ExpressivNoEvent            : \b 0 \n
 # EE_ExpressivTrainingStarted    : \b 1 \n
 # EE_ExpressivTrainingSucceeded  : \b 2 \n
-# EE_ExpressivTrainingFailed     : \b 3 \n 
+# EE_ExpressivTrainingFailed     : \b 3 \n
 # EE_ExpressivTrainingCompleted  : \b 4 \n
 # EE_ExpressivTrainingDataErased : \b 5 \n
 # EE_ExpressivTrainingRejected   : \b 6 \n
@@ -312,7 +312,7 @@ COGTRAININGCONTROL = {'COG_NONE'    : 0,
 # EE_CognitivTrainingRejected             : \b 6 \n
 # EE_CognitivTrainingReset                : \b 7 \n
 # EE_CognitivAutoSamplingNeutralCompleted : \b 8 \n
-# EE_CognitivSignatureUpdated             : \b 9 \n 
+# EE_CognitivSignatureUpdated             : \b 9 \n
 # @see EE_CognitivEvent_enum (edk.h)
 COGEVENT = {'EE_CognitivNoEvent'                        : 0,
             'EE_CognitivTrainingStarted'                : 1,
@@ -398,7 +398,7 @@ class InputSensorDescriptor(ctypes.Structure):
     .xLoc         - x coordinate from center of head towards nose
     .yLoc         - y coordinate from center of head towards ears
     .zLoc         - z coordinate from center of head toward top of skull"""
-    
+
     _fields_ = [("ChannelId", ctypes.c_int), ## logical channel id
                 ("Exist", ctypes.c_int), ## does this sensor exist on this headset model
                 ("Label", ctypes.c_char_p), ## text label identifying this sensor
@@ -413,8 +413,8 @@ class InputSensorDescriptor(ctypes.Structure):
 class EpocHandler:
     ## \internal
     def __init__(self):
-        self.EmotivEngineDLL = ctypes.CDLL("~/EmotivEducation_2.0.0.20/lib/libedk.so")  # link the edk.dll
-        
+        self.EmotivEngineDLL = ctypes.CDLL("libedk.so")  # link the edk.dll
+
     ## Initializes a connection to EmoEngine.
     #
     # This function should be called at the beginning of programs.
@@ -435,19 +435,19 @@ class EpocHandler:
     # @note For Emotiv Control Panel use port 3008. For EmoComposer use port 1726.
     def EE_EngineRemoteConnect(self, ip, port):
         return self.EmotivEngineDLL.EE_EngineRemoteConnect(ip, port)
-    
+
     ## Ends the connection to EmoEngine.
     #
     # Closes the connection to EmoEngine. This function should be called at the end of programs.
-    # @return #ERRCODE    
+    # @return #ERRCODE
     # @see edkErrorCode.h
     def EE_EngineDisconnect(self):
         return self.EmotivEngineDLL.EE_EngineDisconnect()
-    
+
     ## Enables diagnostics logging.
     #
     # @param emotivlogfile str, filepath
-    # @param enabled int, 1 enable / 0 disable 
+    # @param enabled int, 1 enable / 0 disable
     # @warning This should only be enabled if instructed to do so by Emotiv developer support for
     # the purposes of collecting diagnostic information.
     # @return #ERRCODE
@@ -458,14 +458,14 @@ class EpocHandler:
             return self.EmotivEngineDLL.EE_EnableDiagnostics(emotivlogfile, 1)
         else:
             return self.EmotivEngineDLL.EE_EnableDiagnostics(emotivlogfile, 0)
-    
+
     ## Create a handle for EmoEngine event.
     #
     # This handle can be reused by the caller to retrieve events.
     # @return handle, EmoEngineEventHandle
-    def EE_EmoEngineEventCreate(self):        
+    def EE_EmoEngineEventCreate(self):
         return self.EmotivEngineDLL.EE_EmoEngineEventCreate()
-    
+
     ## Create a handle to EmoEngine profile event.
     #
     # details Returns a handle to memory that can hold a profile byte stream.
@@ -473,14 +473,14 @@ class EpocHandler:
     # @return handle, EmoEngineEventHandle
     def EE_ProfileEventCreate(self):
         return self.EmotivEngineDLL.EE_ProfileEventCreate()
-    
+
     ## Free an event handle.
-    # 
+    #
     # This frees memory referenced by event handle.
     # @param emoengineeventhandle handle, created by EE_EmoEngineEventCreate()
     def EE_EmoEngineEventFree(self, emoengineeventhandle):
         self.EmotivEngineDLL.EE_EmoEngineEventFree(emoengineeventhandle)
-    
+
     ## Create a handle to EmoState.
     #
     # Returns a handle to memory that can store an EmoState.
@@ -488,14 +488,14 @@ class EpocHandler:
     # @return handle
     def EE_EmoStateCreate(self):
         return self.EmotivEngineDLL.EE_EmoStateCreate()
-    
+
     ## Free EmoState.
     #
     # Frees memory referenced by an EmoState handle.
     # @param emostatehandle handle, created by EE_EmoStateCreate()
     def EE_EmoStateFree(self, emostatehandle):
         self.EmotivEngineDLL.EE_EmoStateFree(emostatehandle)
-        
+
     ## Get EmoEngine event type.
     #
     # Returns the event type for an event already retrieved using EE_EngineGetNextEvent.
@@ -503,16 +503,16 @@ class EpocHandler:
     # @return #EVENT
     def EE_EmoEngineEventGetType(self, emoengineeventhandle):
          return self.EmotivEngineDLL.EE_EmoEngineEventGetType(emoengineeventhandle)
-    
+
     ## Get Cognitiv event type.
     #
     # Returns the Cognitiv-specific event type for an EE_CognitivEvent event already
-    # retrieved using EE_EngineGetNextEvent. \n 
+    # retrieved using EE_EngineGetNextEvent. \n
     # @param emoengineeventhandle handle, created by EE_EmoEngineEventCreate()
     # @return #COGEVENT
     def EE_CognitivEventGetType(self, emoengineeventhandle):
         return self.EmotivEngineDLL.EE_CognitivEventGetType(emoengineeventhandle)
-    
+
     ## Get Expressiv event type.
     #
     # Returns the Expressiv-specific event type for an EE_ExpressivEvent event already
@@ -521,7 +521,7 @@ class EpocHandler:
     # @return #EXPEVENT
     def EE_ExpressivEventGetType(self, emoengineeventhandle):
         return self.EmotivEngineDLL.EE_ExpressivEventGetType(emoengineeventhandle)
-    
+
     ## Get user ID.
     #
     # Retrieves the user ID for EE_UserAdded and EE_UserRemoved events.
@@ -539,10 +539,10 @@ class EpocHandler:
     # Copies an EmoState returned with a EE_EmoStateUpdate event to memory referenced by an EmoStateHandle.
     # @param emoengineeventhandle handle, returned by EE_EmoEngineEventCreate() and populated with EE_EmoEngineGetNextEvent()
     # @param emostatehandle handle, returned by EE_EmoStateCreate()
-    # @return #ERRCODE    
+    # @return #ERRCODE
     def EE_EmoEngineEventGetEmoState(self, emoengineeventhandle, emostatehandle):
         return self.EmotivEngineDLL.EE_EmoEngineEventGetEmoState(emoengineeventhandle, emostatehandle)
-    
+
     ## Retrieves the next EmoEngine event.
     #
     # Non-blocking call.
@@ -552,7 +552,7 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_EngineGetNextEvent(self, emoengineeventhandle):
         return self.EmotivEngineDLL.EE_EngineGetNextEvent(emoengineeventhandle)
-    
+
     ## Clear EmoEngine event.
     #
     # Clear a specific EmoEngine event type or all events currently inside the event queue.
@@ -561,9 +561,9 @@ class EpocHandler:
     # ERRCODE['EDK_INVALID_PARAMETER'] if input event types are invalid.\n
     # @param eventtypes list, EmoEngine event types (#EVENT)
     # @return #ERRCODE
-    def EE_EngineClearEventQueue(self, eventtypes):    
+    def EE_EngineClearEventQueue(self, eventtypes):
         return self.EmotivEngineDLL.EE_EngineClearEventQueue(eventtypes)
-    
+
     ## Get number of users.
     #
     # Retrieves the number of users on the engine.
@@ -574,7 +574,7 @@ class EpocHandler:
         returnnum = numusers.value
         del numusers
         return (code, returnnum)
-    
+
     ## Set Player number on display.
     #
     # Sets the player number displayed on the physical input device (currently the USB Dongle)
@@ -591,13 +591,13 @@ class EpocHandler:
     # @param userid int, User ID
     # @param profilebuffer pointer, to buffer containing a serialized user profile previously returned from EmoEngine.
     # @param length int, buffer size (number of bytes)
-    # @todo Make it work!!  
+    # @todo Make it work!!
     def EE_SetUserProfile(self, userid, profilebuffer, length):
         buffer = ctypes.create_string_buffer(length)
         buffer.value = profilebuffer
         code = self.EmotivEngineDLL.EE_SetUserProfile(userid, buffer, length)
         return code
-        
+
 
     ## Get User Profile.
     #
@@ -608,29 +608,29 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_GetUserProfile(self, userid, emoengineeventhandle):
         return self.EmotivEngineDLL.EE_GetUserProfile(userid, emoengineeventhandle)
-    
+
     ## Get Base Profile.
     #
     # Returns a serialized user profile for a default user in a synchronous manner. Fills in the event referred
     # to by emoengineeventhandle with an EE_ProfileEvent event that contains the profile data for the default user
     # @param emoengineeventhandle handle, returned by EE_EmoEngineEventCreate()
-    # @return #ERRCODE 
+    # @return #ERRCODE
     def EE_GetBaseProfile(self, emoengineeventhandle):
         return self.EmotivEngineDLL.EE_GetBaseProfile(emoengineeventhandle)
-    
+
     ## Get User Profile Size.
     #
     # Retrieves the number of bytes required to store a serialized version of the requested user profile.
     # @param emoengineeventhandle handle, returned by EE_EmoEngineEventCreate()
     # @return (#ERRCODE, int sizeinbytes)
     # @todo figure out why it gives EDK_INVALID_PARAMETER
-    def EE_GetUserProfileSize(self, emoengineeventhandle):        
+    def EE_GetUserProfileSize(self, emoengineeventhandle):
         profilesizeout = ctypes.c_uint()
         code = self.EmotivEngineDLL.EE_GetUserProfileSize(emoengineeventhandle, ctypes.byref(profilesizeout))
         sizeinbytes = profilesizeout.value
         del profilesizeout
         return (code, int(sizeinbytes))
-    
+
     ## Get User Profile Bytes.
     #
     # Returns a serialized version of the requested user profile.
@@ -639,12 +639,12 @@ class EpocHandler:
     # @todo make it work!!
     # @sa EpocHandler::EE_GetUserProfileSize()
     def EE_GetUserProfileBytes(self, emoengineeventhandle, bufferlength):
-        buffer = ctypes.create_string_buffer(bufferlength)        
+        buffer = ctypes.create_string_buffer(bufferlength)
         code = self.EmotivEngineDLL.EE_GetUserProfileBytes(emoengineeventhandle, ctypes.byref(buffer), bufferlength)
         returnbuffer = buffer.raw
         del buffer
         return (code, returnbuffer)
-    
+
     ## Load User Profile.
     #
     # Loads a user profile from disk and assigns it to the specified user.
@@ -654,7 +654,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_SaveUserProfile()
     def EE_LoadUserProfile(self, userid, inputfilename):
         return self.EmotivEngineDLL.EE_LoadUserProfile(userid, inputfilename)
-    
+
     ## Save User Profile.
     #
     # Saves a user profile for specified user to disk.
@@ -664,7 +664,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_LoadUserProfile()
     def EE_SaveUserProfile(self, userid, outputfilename):
         return self.EmotivEngineDLL.EE_SaveUserProfile(userid, outputfilename)
-    
+
     ## Set Expressiv Alghorithms Threshold.
     #
     # Set threshold for Expressiv algorithms.
@@ -672,10 +672,10 @@ class EpocHandler:
     # @param expressivalgoname #EXPRESSIVALGO
     # @param thresholdname #EXPRTHRESHOLD
     # @param value int, threshold value (min: 0 max: 1000)
-    # @return #ERRCODE 
+    # @return #ERRCODE
     def EE_ExpressivSetThreshold(self, userid, expressivalgoname, thresholdname, value):
         return self.EmotivEngineDLL.EE_ExpressivSetThreshold(userid, expressivalgoname, thresholdname, value)
-    
+
     ## Get Expressiv Threshold.
     #
     # Get threshold from Expressiv algorithms.
@@ -689,7 +689,7 @@ class EpocHandler:
         returnvalue = valueout.value
         del valueout
         return (code, returnvalue)
-    
+
     ## Set Expressiv Training Action.
     #
     # Set the current facial expression for Expressiv training.
@@ -698,7 +698,7 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_ExpressivSetTrainingAction(self, userid, expressivalgoname):
         return self.EmotivEngineDLL.EE_ExpressivSetTrainingAction(userid, expressivalgoname)
-    
+
     ## Set Expressiv Training Control.
     #
     # Set the control flag for Expressiv training. Blocking call.
@@ -707,7 +707,7 @@ class EpocHandler:
     # @return #ERRCODE - current status of EmoEngine. If the query is successful, returns EDK_OK.
     def EE_ExpressivSetTrainingControl(self, userid, control):
         return self.EmotivEngineDLL.EE_ExpressivSetTrainingControl(userid, control)
-    
+
     ## Get Expressiv Training Action.
     #
     # Gets the facial expression currently selected for Expressiv training. Blocking call.
@@ -721,7 +721,7 @@ class EpocHandler:
         returnaction = actionout.value
         del actionout
         return (code, returnaction)
-    
+
     ## Get Expressiv Training Time.
     #
     # Return the duration of a Expressiv training session in ms.
@@ -739,14 +739,14 @@ class EpocHandler:
     # Gets a list of the actions that have been trained by the user.
     # @param userid int, User ID
     # @return (#ERRCODE , bitvector trainedactions)
-    # @todo make it work!! figure out bitvector 
+    # @todo make it work!! figure out bitvector
     def EE_ExpressivGetTrainedSignatureActions(self, userid):
         trainedactionsout = ctypes.c_ulong()
         code = self.EmotivEngineDLL.EE_ExpressivGetTrainedSignatureActions(userid, ctypes.byref(trainedactionsout))
         returntrainedactions = trainedactionsout.value
         del trainedactionsout
         return (code, returntrainedactions)
-    
+
     ## Get Expressiv Trained Signature Available Flag.
     #
     # Gets a flag indicating if the user has trained sufficient actions to activate a trained
@@ -761,7 +761,7 @@ class EpocHandler:
         returnavailable = availableout.value
         del availableout
         return (code, returnavailable)
-    
+
     ## Set Expressiv Signature Type.
     #
     # Configures the Expressiv suite to use either the built-in, universal signature or a personal, trained
@@ -772,7 +772,7 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_ExpressivSetSignatureType(self, userid, expsigtype):
         return self.EmotivEngineDLL.EE_ExpressivSetSignatureType(userid, expsigtype)
-    
+
     ## Get Expressiv Signature Type.
     #
     # Indicates whether the Expressiv suite is currently using either the built-in, universal signature or
@@ -787,7 +787,7 @@ class EpocHandler:
         returnsigtype = sigtypeout.value
         del sigtypeout
         return (code, returnsigtype)
-    
+
     ## Set Cognitiv Active Actions
     #
     # Set the current Cognitiv active action types.
@@ -797,7 +797,7 @@ class EpocHandler:
     def EE_CognitivSetActiveActions(self, userid, activeactions):
         #return self.EmotivEngineDLL.EE_CognitivSetActiveActions(userid, activeactions)
         pass
-    
+
     ## Get Cognitiv Active Actions
     #
     # Get the current Cognitiv active action types.
@@ -812,7 +812,7 @@ class EpocHandler:
         returnactions = activeactionsout.value
         del activeactionsout
         return (code, returnactions)
-    
+
     ## Get Cognitiv Training Time
     #
     # Return the duration of a Cognitiv training session in ms.
@@ -825,7 +825,7 @@ class EpocHandler:
         returntrainingtime = trainingtimeout.value
         del trainingtimeout
         return (code, returntrainingtime)
-    
+
     ## Set Cognitiv Training Control
     #
     # Set the training control flag for Cognitiv training.
@@ -834,7 +834,7 @@ class EpocHandler:
     # @see #COGTRAININGCONTROL
     def EE_CognitivSetTrainingControl(self, userid, trainingcontrol):
         return self.EmotivEngineDLL.EE_CognitivSetTrainingControl(userid, trainingcontrol)
-    
+
     ## Set Cognitiv Training Action
     #
     # Set the type of Cognitiv action to be trained.
@@ -843,7 +843,7 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_CognitivSetTrainingAction(self, userid, action):
         return self.EmotivEngineDLL.EE_CognitivSetTrainingAction(userid, action)
-    
+
     ## Get Cognitiv Training Action
     #
     # Get the type of Cognitiv action currently selected for training.
@@ -855,7 +855,7 @@ class EpocHandler:
         returntrainingaction = trainingactionout.value
         del trainingactionout
         return (code, returntrainingaction)
-    
+
     ## Get Cognitiv Trained Signature Actions
     #
     # Gets a list of the Cognitiv actions that have been trained by the user.\nBlocking call
@@ -869,7 +869,7 @@ class EpocHandler:
         returntrainedactions = trainedactionsout.value
         del trainedactionsout
         return (code, returntrainedactions)
-    
+
     ## Get Overall Cognitiv Skill Rating
     #
     # Gets the current overall skill rating of the user in Cognitiv.
@@ -882,7 +882,7 @@ class EpocHandler:
         returnoverallskillrating = skillratingout.value
         del skillratingout
         return (code, returnoverallskillrating)
-    
+
     ## Get Cognitiv Action Skill Rating
     #
     # Gets the current skill rating for particular Cognitiv actions of the user. Blocking call.
@@ -895,7 +895,7 @@ class EpocHandler:
         returnskillrating = skillratingout.value
         del skillratingout
         return (code, returnskillrating)
-    
+
     ## Set Cognitiv Activation Level
     #
     # Set the overall sensitivity for all Cognitiv actions (lowest 1 - highest 7)
@@ -905,7 +905,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivGetActivationLevel()
     def EE_CognitivSetActivationLevel(self, userid, level):
         return self.EmotivEngineDLL.EE_CognitivSetActivationLevel(userid, level)
-    
+
     ## Set Cognitiv Action Sensitivity
     #
     # Set the sensitivity of Cognitiv actions (lowest 1 - highest 10)
@@ -920,7 +920,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivGetActionSensitivity()
     def EE_CognitivSetActionSensitivity(self, userid, action1sens, action2sens, action3sens, action4sens):
         return self.EmotivEngineDLL.EE_CognitivSetActionSensitivity(userid, action1sens, action2sens, action3sens, action4sens)
-    
+
     ## Get Cognitiv Activation Level
     #
     # Get the overall sensitivity for all Cognitiv actions (Min 1 Max 10)
@@ -933,7 +933,7 @@ class EpocHandler:
         returnlevel = levelout.value
         del levelout
         return (code, returnlevel)
-    
+
     ## Get Cognitiv Action Sensitivity
     #
     # Query the sensitivity of Cognitiv actions.
@@ -952,7 +952,7 @@ class EpocHandler:
         action4sens = action4sensout.value
         del action1sensout, action2sensout, action3sensout, action4sensout
         return (code, action1sens, action2sens, action3sens, action4sens)
-    
+
     ## Start Sampling Cognitiv Neutral
     #
     # Start the sampling of Neutral state in Cognitiv.
@@ -961,7 +961,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivStopSamplingNeutral()
     def EE_CognitivStartSamplingNeutral(self, userid):
         return self.EmotivEngineDLL.EE_CognitivStartSamplingNeutral(userid)
-    
+
     ## Stop Sampling Cognitiv Neutral
     #
     # Stop the sampling of Neutral state in Cognitiv.
@@ -970,7 +970,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivStartSamplingNeutral()
     def EE_CognitivStopSamplingNeutral(self, userid):
         return self.EmotivEngineDLL.EE_CognitivStopSamplingNeutral(userid)
-    
+
     ## Set Cognitiv Signature Caching
     #
     # Enable or disable signature caching in Cognitiv (1 enable/0 disable)
@@ -980,7 +980,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivGetSignatureCaching()
     def EE_CognitivSetSignatureCaching(self, userid, enable):
         return self.EmotivEngineDLL.EE_CognitivSetSignatureCaching(userid, enable)
-    
+
     ## Get Cognitiv Signature Caching
     #
     # Get the status of signature caching in Cognitiv
@@ -993,7 +993,7 @@ class EpocHandler:
         returnflag = flag.value
         del flag
         return (code, returnflag)
-    
+
     ## Set Cognitiv Signature Cache Size
     #
     # Set the cache size for the signature caching in Cognitiv
@@ -1003,7 +1003,7 @@ class EpocHandler:
     # @sa EpocHandler::EE_CognitivGetSignatureCacheSize()
     def EE_CognitivSetSignatureCacheSize(self, userid, size):
         return self.EmotivEngineDLL.EE_CognitivSetSignatureCacheSize(userid, size)
-    
+
     ## Get Cognitiv Signature Cache Size
     #
     # Get the current cache size for the signature caching in Cognitiv (0 = unlimited)
@@ -1016,7 +1016,7 @@ class EpocHandler:
         returnsize = sizeout.value
         del sizeout
         return (code, returnsize)
-    
+
     ## Get Headset Sensor Details
     #
     # Returns a struct containing details about the specified EEG channel's headset.
@@ -1027,7 +1027,7 @@ class EpocHandler:
         inputsensordescriptor = InputSensorDescriptor()
         code = self.EmotivEngineDLL.EE_HeadsetGetSensorDetails(channelid, ctypes.byref(inputsensordescriptor))
         return (code, inputsensordescriptor)
-    
+
     ## Get Emotiv hardware versions.
     #
     # This returns the Emotiv hardware version numbers (as hex)
@@ -1045,9 +1045,9 @@ class EpocHandler:
         versionheadset.insert(1, "x")
         versiondongle.insert(1, "x")
         versionheadset = "".join(versionheadset)
-        versiondongle = "".join(versiondongle)        
+        versiondongle = "".join(versiondongle)
         return (code, (hex(int(versionheadset, 16)), hex(int(versiondongle, 16))))
-    
+
     ## Get Software Version
     #
     # Returns the current version of the Emotiv SDK software. X.X.X.X
@@ -1061,7 +1061,7 @@ class EpocHandler:
         returnbuildnr = buildnrout.value
         del versionout, buildnrout
         return (code, returnversion, returnbuildnr)
-    
+
     ## Get Headset Gyro Delta
     #
     # Returns the delta of the movement of the gyro since the previous call for a particular user.
@@ -1076,17 +1076,17 @@ class EpocHandler:
         returnypos = yposout.value
         del xposout , yposout
         return (code, (returnxpos, returnypos))
-    
+
     ## Rezero Headset Gyro
     #
     # Re-zero the gyro for a particular user.
     # @param userid int, User ID
     # @return #ERRCODE
-    # @sa EpocHandler::EE_HeadsetGetGyroDelta() 
+    # @sa EpocHandler::EE_HeadsetGetGyroDelta()
     def EE_HeadsetGyroRezero(self, userid):
         code = self.EmotivEngineDLL.EE_HeadsetGyroRezero(userid)
         return code
-    
+
     ## Create Optimization Parameter Handle
     #
     # Creates a handle to memory that can hold an optimization parameter which is used to configure the behaviour of optimization.
@@ -1094,14 +1094,14 @@ class EpocHandler:
     # @sa EpocHandler::EE_OptimizationParamFree()
     def EE_OptimizationParamCreate(self):
         return self.EmotivEngineDLL.EE_OptimizationParamCreate()
-    
+
     ## Free Optimization Parameter Handle
     #
     # Frees memory referenced by an optimization parameter handle.
     # @param optparamhandle handle, Handle created by EpocHandler::EE_OptimizationParamCreate()
     def EE_OptimizationParamFree(self, optimizationparamhandle):
         self.EmotivEngineDLL.EE_OptimizationParamFree(optimizationparamhandle)
-    
+
     ## Enable Optimization
     #
     # Enable optimization. EmoEngine will try to optimize its performance according to the information
@@ -1112,26 +1112,26 @@ class EpocHandler:
     def EE_OptimizationEnable(self, optimizationparamhandle):
         code = self.EmotivEngineDLL.EE_OptimizationEnable(optimizationparamhandle)
         return code
-    
+
     ## Is Optimization Enabled
     #
     # Determine whether optimization is on or not.
     # @return (#ERRCODE , enabled)
     # @todo check that it can become True
-    def EE_OptimizationIsEnabled(self):        
+    def EE_OptimizationIsEnabled(self):
         enabledout = ctypes.c_bool()
         code = self.EmotivEngineDLL.EE_OptimizationIsEnabled(ctypes.byref(enabledout))
         returnenabled = enabledout.value
         del enabledout
         return (code, returnenabled)
-    
+
     ## Disable Optimization
     #
     # Disable optimization.
     # @return #ERRCODE
     def EE_OptimizationDisable(self):
         return self.EmotivEngineDLL.EE_OptimizationDisable()
-    
+
     ## Get Optimization Parameter
     #
     # Get optimization parameter. If optimization is not enabled (this can be checked with\n
@@ -1140,7 +1140,7 @@ class EpocHandler:
     # @return #ERRCODE
     def EE_OptimizationGetParam(self, optimizationparamhandle):
         return self.EmotivEngineDLL.EE_OptimizationGetParam(optimizationparamhandle)
-    
+
     ## Get Vital Optimization Algorithm
     #
     # Get a list of vital algorithms of specific suite from optimization parameter\n
@@ -1148,13 +1148,13 @@ class EpocHandler:
     # #AFFECTIVALGO or #COGACTION depending on the suite parameter.
     # @return (#ERRCODE, algbitvector)
     # @todo make sure it works!!
-    def EE_OptimizationGetVitalAlgorithm(self, optimizationparamhandle, suite):        
+    def EE_OptimizationGetVitalAlgorithm(self, optimizationparamhandle, suite):
         alghorithbitvectorout = ctypes.c_uint()
         code = self.EmotivEngineDLL.EE_OptimizationGetVitalAlgorithm(optimizationparamhandle, suite, ctypes.byref(alghorithbitvectorout))
         returnalgbitvector = alghorithbitvectorout.value
         del alghorithbitvectorout
         return (code, returnalgbitvector)
-    
+
     ## Set Vital Optimization Algorithm
     #
     # Set a list of vital algorithms of specific suite to optimization parameter.
@@ -1163,10 +1163,10 @@ class EpocHandler:
     # @param algbitvector bitvector, a list of vital algorithm composed of #EXPRESSIVALGO, #AFFECTIVALGO or #COGACTION depending on the suite parameter passed in.
     # @return #ERRCODE
     # @todo make sure it works!!
-    def EE_OptimizationSetVitalAlgorithm(self, optimizationparamhandle, suite, algbitvector):        
+    def EE_OptimizationSetVitalAlgorithm(self, optimizationparamhandle, suite, algbitvector):
         code = self.EmotivEngineDLL.EE_OptimizationSetVitalAlgorithm(optimizationparamhandle, suite, algbitvector)
         return code
-    
+
     ## Reset Detection
     #
     # Resets all settings and user-specific profile data for the specified detection suite.
@@ -1178,14 +1178,14 @@ class EpocHandler:
     def EE_ResetDetection(self, userid, suite, detectionbitvector):
         code = self.EmotivEngineDLL.EE_ResetDetection(userid, suite, detectionbitvector)
         return code
-    
+
     ##################################[ EmoState ]########################################
     # EmoStates are generated by the Emotiv detection engine (EmoEngine) and
     # represent the emotional status of the user at a given time.
     # EmoStateHandle is an opaque reference to an internal EmoState structure
     # None of the EmoState interface functions are thread-safe.
     ######################################################################################
-    
+
     ## Get Time From Start
     #
     # Return the time since EmoEngine has been successfully connected to the headset.
@@ -1197,7 +1197,7 @@ class EpocHandler:
     # @bug It will start returning "nan"
     def ES_GetTimeFromStart(self, emostatehandle):
         return self.EmotivEngineDLL.ES_GetTimeFromStart(emostatehandle)
-    
+
     ## Get Headset On/Off
     #
     # Return whether the headset has been put on correctly or not. If the headset cannot not be
@@ -1207,16 +1207,16 @@ class EpocHandler:
     # @sa EpocHandler::EE_EmoStateCreate()
     def ES_GetHeadsetOn(self, emostatehandle):
         return self.EmotivEngineDLL.ES_GetHeadsetOn(emostatehandle)
-    
+
     ## Get Number Of Channels With Contact Quality Data
     #
     # Get the number of channels with available sensor contact quality data.
-    # @param emostatehandle 
+    # @param emostatehandle
     # @return int, number of channels with contact quality data available.
     # @sa EpocHandler::EE_EmoStateCreate()
     def ES_GetNumContactQualityChannels(self, emostatehandle):
         return self.EmotivEngineDLL.ES_GetNumContactQualityChannels(emostatehandle)
-    
+
     ## Get Contact Quality
     #
     # Get the contact quality of a specific sensor.
@@ -1225,7 +1225,7 @@ class EpocHandler:
     # @return #CONTACTQUALITY
     def ES_GetContactQuality(self, emostatehandle, sensorid):
         return self.EmotivEngineDLL.ES_GetContactQuality(emostatehandle, sensorid)
-    
+
     ## Get Contact Quality From All Channels
     #
     # Query the contact quality of all the electrodes in one single call.
@@ -1233,7 +1233,7 @@ class EpocHandler:
     # @todo Make it work!
     def ES_GetContactQualityFromAllChannels(self, emostatehandle):
         pass
-    
+
     ## Expression Blinking
     #
     # Query whether the user is blinking at the time the EmoState is captured.
@@ -1242,7 +1242,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsEyesOpen()
     def ES_ExpressivIsBlink(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsBlink(emostatehandle)
-    
+
     ## Expression Left Winking
     #
     # Query whether the user is winking left at the time the EmoState is captured.
@@ -1251,16 +1251,16 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsEyesOpen() , EpocHandler::ES_ExpressivIsBlink()
     def ES_ExpressivIsLeftWink(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsLeftWink(emostatehandle)
-    
+
     ## Expression Right Winking
     #
     # Query whether the user is winking right at the time the EmoState is captured.
     # @param emostatehandle
     # @return 1/0 (right wink/no right wink)
     # @sa EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink() , EpocHandler::ES_ExpressivIsEyesOpen()
-    def ES_ExpressivIsRightWink(self, emostatehandle):        
+    def ES_ExpressivIsRightWink(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsRightWink(emostatehandle)
-    
+
     ## Expression Eyes Open
     #
     # Query whether the eyes of the user are opened at the time the EmoState is captured.
@@ -1269,16 +1269,16 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink()
     def ES_ExpressivIsEyesOpen(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsEyesOpen(emostatehandle)
-    
+
     ## Expression Looking Up
     #
-    # Query whether the user is looking up at the time the EmoState is captured. 
+    # Query whether the user is looking up at the time the EmoState is captured.
     # @param emostatehandle
     # @return 1/0 (looking up/not looking up)
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink() , EpocHandler::ES_ExpressivIsEyesOpen()
     def ES_ExpressivIsLookingUp(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsLookingUp(emostatehandle)
-    
+
     ## Expression Looking Down
     #
     # Query whether the user is looking down at the time the EmoState is captured.
@@ -1287,7 +1287,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink() , EpocHandler::ES_ExpressivIsEyesOpen() , EpocHandler::ES_ExpressivIsLookingUp()
     def ES_ExpressivIsLookingDown(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsLookingDown(emostatehandle)
-    
+
     ## Expression Looking Left
     #
     # Query whether the user is looking left at the time the EmoState is captured.
@@ -1296,7 +1296,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink() , EpocHandler::ES_ExpressivIsEyesOpen() , EpocHandler::ES_ExpressivIsLookingUp() , EpocHandler::ES_ExpressivIsLookingDown()
     def ES_ExpressivIsLookingLeft(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsLookingLeft(emostatehandle)
-    
+
     ## Expression Looking Right
     #
     # Query whether the user is looking right at the time the EmoState is captured.
@@ -1305,7 +1305,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivIsRightWink() , EpocHandler::ES_ExpressivIsLeftWink() , EpocHandler::ES_ExpressivIsBlink() , EpocHandler::ES_ExpressivIsEyesOpen() , EpocHandler::ES_ExpressivIsLookingUp() , EpocHandler::ES_ExpressivIsLookingDown() , EpocHandler::ES_ExpressivIsLookingLeft()
     def ES_ExpressivIsLookingRight(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivIsLookingRight(emostatehandle)
-    
+
     ## Get Eyelid State
     #
     # Query the eyelids state of the user.
@@ -1320,7 +1320,7 @@ class EpocHandler:
         lefteyereturn , righteyereturn = lefteye.value , righteye.value
         del lefteye, righteye
         return (lefteyereturn, righteyereturn)
-    
+
     ## Get Eye Location
     #
     # Query the eyes position of the user.
@@ -1338,16 +1338,16 @@ class EpocHandler:
         xreturn , yreturn = x.value , y.value
         del x, y
         return (xreturn, yreturn)
-    
+
     ## Get Eyebrow Extent
     #
     # Returns the eyebrow extent of the user (Obsolete function).
     # @param emostatehandle
-    # @return extent float, eyebrow extent value (0.0 to 1.0)  
+    # @return extent float, eyebrow extent value (0.0 to 1.0)
     # @sa EpocHandler::ES_ExpressivGetUpperFaceAction(), EpocHandler::ES_ExpressivGetUpperFaceActionPower()
     def ES_ExpressivGetEyebrowExtent(self,emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivGetEyebrowExtent(emostatehandle)
-    
+
     ## Get Smile Extent
     #
     # Returns the smile extent of the user (Obsolete function).
@@ -1356,7 +1356,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivGetUpperFaceAction(), EpocHandler::ES_ExpressivGetUpperFaceActionPower()
     def ES_ExpressivGetSmileExtent(self,emostatehandle):
         return self.EmotivEngineDLL(emostatehandle)
-    
+
     ## Get Clench Extent
     #
     # Returns the clench extent of the user (obsolete)
@@ -1374,7 +1374,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivGetUpperFaceActionPower()
     def ES_ExpressivGetUpperFaceAction(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivGetUpperFaceAction(emostatehandle)
-    
+
     ## Get Upper Face Action Power
     #
     # Return the power of the upper face action of the user.
@@ -1383,7 +1383,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivGetUpperFaceAction()
     def ES_ExpressivGetUpperFaceActionPower(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivGetUpperFaceActionPower(emostatehandle)
-    
+
     ## Get Lower Face Action
     #
     # Returns the detected lower face Expressiv action of the user.
@@ -1392,7 +1392,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivGetLowerFaceActionPower() , EpocHandler::ES_ExpressivGetUpperFaceAction()
     def ES_ExpressivGetLowerFaceAction(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivGetLowerFaceAction(emostatehandle)
-    
+
     ## Get Lower Face Action Power
     #
     # Returns the detected lower face Expressiv action power of the user.
@@ -1401,7 +1401,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_ExpressivGetLowerFaceAction()
     def ES_ExpressivGetLowerFaceActionPower(self, emostatehandle):
         return self.EmotivEngineDLL.ES_ExpressivGetLowerFaceActionPower(emostatehandle)
-    
+
     ## Is Expressiv Active
     #
     # Query whether the signal is too noisy for Expressiv detection to be active.
@@ -1410,7 +1410,7 @@ class EpocHandler:
     # @return 1/0, (active / not active)
     def ES_ExpressivIsActive(self, emostatehandle, type):
         return self.EmotivEngineDLL.ES_ExpressivIsActive(emostatehandle, type)
-    
+
     ## Get Long Term Affectiv Excitement Score
     #
     # Returns the long term excitement level of the user.
@@ -1419,7 +1419,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_AffectivGetExcitementShortTermScore()
     def ES_AffectivGetExcitementLongTermScore(self, emostatehandle):
         return self.EmotivEngineDLL.ES_AffectivGetExcitementLongTermScore(emostatehandle)
-    
+
     ## Get Short Term Affectiv Excitement Score
     #
     # Returns the short term excitement level of the user.
@@ -1430,7 +1430,7 @@ class EpocHandler:
         score = ctypes.c_float
         score.value = self.EmotivEngineDLL.ES_AffectivGetExcitementShortTermScore(emostatehandle)
         return score.value
-    
+
     ## Is Affectiv Active
     #
     # Query whether the signal is too noisy for Affectiv detection to be active.
@@ -1439,7 +1439,7 @@ class EpocHandler:
     # @return 1/0, (active / not active)
     def ES_AffectivIsActive(self, emostatehandle, type):
         return self.EmotivEngineDLL.ES_AffectivIsActive(emostatehandle, type)
-    
+
     ## Get Affectiv Meditation Score
     #
     # Return the meditation score of the user.
@@ -1447,23 +1447,23 @@ class EpocHandler:
     # @return score float, (0.0 to 1.0)
     def ES_AffectivGetMeditationScore(self, emostatehandle):
         return self.EmotivEngineDLL.ES_AffectivGetMeditationScore(emostatehandle)
-    
+
     ## Get Affectiv Frustration Score
     #
     # Return the frustration score of the user.
     # @param emostatehandle
-    # @return score float, (0.0 to 1.0) 
+    # @return score float, (0.0 to 1.0)
     def ES_AffectivGetFrustrationScore(self,emostatehandle):
         return self.EmotivEngineDLL.ES_AffectivGetFrustrationScore(emostatehandle)
-    
+
     ## Get Affectiv Engagement/Boredom Score
     #
     # Return the engangement/boredom score of the user.
     # @param emostatehandle
-    # @return score float, (0.0 to 1.0) 
+    # @return score float, (0.0 to 1.0)
     def ES_AffectivGetEngagementBoredomScore(self, emostatehandle):
         return self.EmotivEngineDLL.ES_AffectivGetEngagementBoredomScore(emostatehandle)
-    
+
     ## Get Current Cognitiv Action
     #
     # Returns the detected Cognitiv action of the user.
@@ -1472,7 +1472,7 @@ class EpocHandler:
     # @sa EpocHandler::ES_CognitivGetCurrentActionPower()
     def ES_CognitivGetCurrentAction(self, emostatehandle):
         return self.EmotivEngineDLL.ES_CognitivGetCurrentAction(emostatehandle)
-    
+
     ## Get Current Cognitiv Action Power
     #
     # Returns the detected action power of the user.
@@ -1481,15 +1481,15 @@ class EpocHandler:
     # @sa EpocHandler::ES_CognitivGetCurrentAction()
     def ES_CognitivGetCurrentActionPower(self, emostatehandle):
         return self.EmotivEngineDLL.ES_CognitivGetCurrentActionPower(emostatehandle)
-    
+
     ## Is Cognitiv Active
     #
     # Query whether the signal is too noisy for Cognitiv detection to be active.
-    # @param emostatehandle 
-    # @param 1/0 , (active / not active) 
+    # @param emostatehandle
+    # @param 1/0 , (active / not active)
     def ES_CognitivIsActive(self, emostatehandle):
         return self.EmotivEngineDLL.ES_CognitivIsActive(emostatehandle)
-    
+
     ## Get Wireless Signal Status
     #
     # Get the current wireless signal strength.
@@ -1497,47 +1497,47 @@ class EpocHandler:
     # @return signalstrength, #SIGNALSTRENGTH
     def ES_GetWirelessSignalStatus(self, emostatehandle):
         return self.EmotivEngineDLL.ES_GetWirelessSignalStatus(emostatehandle)
-    
+
     ## Clone EmoStateHandle
     #
     # Copy srcemostatehandle to destemostatehandle
     # @param destemostatehandle handle , Destination EmoState handle
     # @param srcemostatehandle handle , Source EmoState handle
     # @sa EpocHandler::EE_EmoStateCreate()
-    def ES_Copy(self, destemostatehandle, srcemostatehandle): 
+    def ES_Copy(self, destemostatehandle, srcemostatehandle):
         self.EmotivEngineDLL.ES_Copy(destemostatehandle, srcemostatehandle)
         return
-    
+
     ## Is Affectiv EmoStates Equal
     #
     # Check whether handle A are identical with B 'emotiv' state.
     # @param emostatehandle, Emostate handle A
     # @param emostatehandle, Emostate handle B
     # @return 1/0 , (equal / no equal)
-    # @sa EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal() 
+    # @sa EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal()
     def ES_AffectivEqual(self, handlea, handleb):
         return self.EmotivEngineDLL.ES_AffectivEqual(handlea, handleb)
-    
+
     ## Is Expressiv EmoStates Equal
     #
     # Check whether two states are with identical Expressiv state, i.e. are both state representing the same facial expression.
     # @param emostatehandle, Emostate handle A
     # @param emostatehandle, Emostate handle B
     # @return 1/0 , (equal / no equal)
-    # @sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal() 
+    # @sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal()
     def ES_ExpressivEqual(self, handlea, handleb):
         return self.EmotivEngineDLL.ES_ExpressivEqual(handlea, handleb)
-    
+
     ## Is Cognitiv EmoStates Equal
     #
     # Check whether two states are with identical Cognitiv state.
     # @param emostatehandle, Emostate handle A
     # @param emostatehandle, Emostate handle B
     # @return 1/0 , (equal / no equal)
-    # @sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal() 
+    # @sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_EmoEngineEqual(), EpocHandler::ES_Equal()
     def ES_CognitivEqual(self, handlea, handleb):
         return self.EmotivEngineDLL.ES_CognitivEqual(handlea, handleb)
-    
+
     ## Is EmoEngine States Equal
     #
     # Check whether two states are with identical EmoEngine state.
@@ -1545,10 +1545,10 @@ class EpocHandler:
     # \param emostatehandle, Emostate handle A
     # \param emostatehandle, Emostate handle B
     # \return 1/0 , (equal / no equal)
-    # \sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_Equal() 
+    # \sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_CognitivEqual(), EpocHandler::ES_Equal()
     def ES_EmoEngineEqual(self, handlea, handleb):
         return self.EmotivEngineDLL.ES_EmoEngineEqual(handlea, handleb)
-    
+
     ## Is EmoStateHandles Identical
     #
     # Check whether two EmoStateHandles are identical.
@@ -1558,11 +1558,11 @@ class EpocHandler:
     # \sa EpocHandler::ES_AffectivEqual(), EpocHandler::ES_ExpressivEqual(), EpocHandler::ES_EmoEngineEqual()
     def ES_Equal(self, handlea, handleb):
         return self.EmotivEngineDLL.ES_Equal(handlea, handleb)
-    
+
     ## Get Battery Charge Level
     #
     # Get the level of charge remaining in the headset battery.
-    # \param emostatehandle 
+    # \param emostatehandle
     # \return (chargelevel, maxchargelevel) - (the current level of charge in the headset battery / the maximum level of charge in the battery)
     def ES_GetBatteryChargeLevel(self,emostatehandle):
         chrglvl     = ctypes.c_int()
@@ -1570,7 +1570,7 @@ class EpocHandler:
         self.EmotivEngineDLL.ES_GetBatteryChargeLevel(emostatehandle,ctypes.byref(chrglvl),ctypes.byref(maxchrglvl))
         returnchrglvl, returnmaxlvl = chrglvl.value , maxchrglvl.value
         return (returnchrglvl, returnmaxlvl)
-    
+
     ## Initialize Emo State
     #
     # Initialize the EmoState into neutral state.
