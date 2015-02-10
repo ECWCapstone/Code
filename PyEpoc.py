@@ -413,7 +413,7 @@ class InputSensorDescriptor(ctypes.Structure):
 class EpocHandler:
     ## \internal
     def __init__(self):
-        self.EmotivEngineDLL = ctypes.CDLL("/home/hidden/EmotivEducation_2.0.0.20/lib/libedk.so")  # link the edk.dll
+        self.EmotivEngineDLL = ctypes.CDLL("~/EmotivEducation_2.0.0.20/lib/libedk.so")  # link the edk.dll
         
     ## Initializes a connection to EmoEngine.
     #
