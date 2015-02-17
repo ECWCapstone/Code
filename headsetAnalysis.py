@@ -3,19 +3,27 @@ from PyEpoc import EpocHandler, ERRCODE
 
 #consumer function
 def processGyroData(tup):
+	coords = {"x": tup[0], "y": tup[1]}
 	Directions = []
+	sumDirect = float(abs(coords['x']) + abs(coords['y']))
 
-	if tup[0] < 0:
-		 Directions.append("left")
+	if sumDirect ==0:
+		return
 
-	if tup[0] > 0: 
-		Directions.append("right")
+	percentX = abs(coords['x'] / sumDirect)
+	percentY = abs(coords['y'] / sumDirect)
 
-	if tup[1] < 0: 
-		Directions.append("down")
+	if percentX > 0.25:
+		if coords['x'] > 0:
+			Directions.append("right-{0:.2f}".format(percentX))
+		else:
+			Directions.append("left-{0:.2f}".format(percentX))
 
-	if tup[1] > 0:
-		Directions.append("up")
+	if percentY > 0.25:
+		if coords['y'] > 0:
+			Directions.append("up-{0:.2f}".format(percentY))
+		else:
+			Directions.append("down-{0:.2f}".format(percentY))
 
 	if len(Directions) > 0:
 
@@ -48,7 +56,7 @@ while 1:
 	numLoop += 1
 
 	if numLoop >= 10:
-		sumTup = (sumTup[0]/10, sumTup[1]/10)
+		sumTup = (sumTup[0] / numLoop, sumTup[1] / numLoop)
 
 		processGyroData(sumTup)
 		sumTup = (0,0)
