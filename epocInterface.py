@@ -11,9 +11,15 @@ class EpocInterface:
 		print e_handler.EE_EngineConnect()
 
 	#consumer function
+	#directions processed by headset represented in tupples
+	#each tupple represents (x,y) where:(x,y) = ((left/right,up/down) = ((horizontal,vertical))
+	#each direction pair, horizontal or vertical holds magnitude of change in its direction
+	#coords is a hash table where X: delta(X), and Y:delta(Y)
+	#overall: returns percentage of each change in direction while ignoring values under 25%
+
 	def processGyroData(tup):
 		coords = {"x": tup[0], "y": tup[1]}
-		Directions = []
+		Directions = [] #array that holds directions
 		sumDirect = float(abs(coords['x']) + abs(coords['y']))
 
 		if sumDirect ==0:
@@ -22,6 +28,7 @@ class EpocInterface:
 		percentX = abs(coords['x'] / sumDirect)
 		percentY = abs(coords['y'] / sumDirect)
 
+		#simplified threshold for x and y
 		if percentX > 0.25:
 			if coords['x'] > 0:
 				Directions.append("right-{0:.2f}".format(percentX))
@@ -34,6 +41,14 @@ class EpocInterface:
 			else:
 				Directions.append("down-{0:.2f}".format(percentY))
 
+				#append the direction to the directions array
+
 		if len(Directions) > 0:
 
 			print ", ".join(Directions)
+
+			# appending two strings together 
+			# each string has the direction and percentage of change
+			# ["right" -.30, up-.70]
+			
+
