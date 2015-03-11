@@ -15,7 +15,8 @@ class EpocInterface:
 	def connect(self):
 		return self.e_handler.EE_EngineConnect()
 
-	def sample_gyro_data():
+	@staticmethod
+	def sample_gyro_data(funct):
 		engine = EpocHandler()
 		print engine.EE_EngineConnect()
 
@@ -24,10 +25,10 @@ class EpocInterface:
 		while True:
 			state = engine.EE_EngineGetNextEvent(new_event)
 			gyro_data = engine.EE_HeadsetGetGyroDelta(0)
-			self.handler_funct(gyro_data[1])
+			funct(gyro_data[1])
 
 	def run(self):
-		threading.Thread(target=sample_gyro_data).start()
+		threading.Thread(target=self.sample_gyro_data(self.handler_funct)).start()
 
 	
 			
