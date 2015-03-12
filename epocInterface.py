@@ -9,7 +9,6 @@ class EpocInterface:
 		print str_input
 
 	def __init__(self, funct=print_me):
-		# self.e_handler = EpocHandler()
 		self.handler_funct = funct
 
 	def connect(self):
@@ -19,7 +18,7 @@ class EpocInterface:
 	def sample_gyro_data(funct):
 		engine = EpocHandler()
 		print engine.EE_EngineConnect()
-
+		time.sleep(2)
 		new_event = engine.EE_EmoEngineEventCreate()
 
 		while True:
