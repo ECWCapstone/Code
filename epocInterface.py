@@ -1,5 +1,6 @@
 #processes events as they come in
 from PyEpoc import EpocHandler, ERRCODE
+import multiprocessing as mp
 import threading
 import time
 
@@ -27,7 +28,11 @@ class EpocInterface:
 			funct(gyro_data[1])
 
 	def run(self):
-		threading.Thread(target=self.sample_gyro_data(self.handler_funct)).start()
+		# threading.Thread(target=self.sample_gyro_data, args=(self.handler_funct,)).start()
+		# thread.start_new_thread(self.sample_gyro_data(self.handler_funct))
+		p = mp.Process(target=self.sample_gyro_data, args=(self.handler_funct,))
+		p.start()
+		# return p
 
 	
 			
