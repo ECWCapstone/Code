@@ -3,6 +3,7 @@ from PyEpoc import EpocHandler, ERRCODE
 import multiprocessing as mp
 import threading
 import time
+from emotiv import Epoc
 
 class EpocInterface:
 
@@ -17,15 +18,21 @@ class EpocInterface:
 
 	@staticmethod
 	def sample_gyro_data(funct):
-		engine = EpocHandler()
-		print engine.EE_EngineConnect()
-		time.sleep(2)
-		new_event = engine.EE_EmoEngineEventCreate()
+		# engine = EpocHandler()
+		# print engine.EE_EngineConnect()
+		# time.sleep(2)
+		# new_event = engine.EE_EmoEngineEventCreate()
 
+		# while True:
+		# 	state = engine.EE_EngineGetNextEvent(new_event)
+		# 	gyro_data = engine.EE_HeadsetGetGyroDelta(0)
+		# 	funct(gyro_data[1])
+		epoc = Epoc()
+		print 'Connected'
 		while True:
-			state = engine.EE_EngineGetNextEvent(new_event)
-			gyro_data = engine.EE_HeadsetGetGyroDelta(0)
-			funct(gyro_data[1])
+			gyros = epoc.get_gyros()
+			# times = epoc.times
+			funct(gyros)
 
 	def run(self):
 		# threading.Thread(target=self.sample_gyro_data, args=(self.handler_funct,)).start()

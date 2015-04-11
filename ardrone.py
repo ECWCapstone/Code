@@ -17,6 +17,8 @@ class ARDrone:
 		self.processes = []
 		self.speed = 0.5
 
+
+		self.number_in_queue = mp.Value('i', 0)
 		self.ip_address = IP_ADDRESS;
 		self.ctrl_socket = socket.socket()
 		self.status_socket = socket.socket()
@@ -59,15 +61,21 @@ class ARDrone:
 
 	def take_off(self):
 		take_off_int = 0b10001010101000000001000000000
+		clear_queue(self.cmd_queue)
+		self.number_in_queue.value = 0
 		self.enqueue_cmd("REF", (",%d" % take_off_int))
 
 	def land(self):
 		land_int = 0b10001010101000000000000000000
+		clear_queue(self.cmd_queue)
+		self.number_in_queue.value = 0
 		self.enqueue_cmd("REF", (",%d" % land_int))
 		
 
 	def emergency_stop(self):
 		stop_int = 0b10001010101000000000100000000
+		clear_queue(self.cmd_queue)
+		self.number_in_queue.value = 0
 		self.enqueue_cmd("REF", (",%d" % stop_int))
 
 	def right(self): 
@@ -107,6 +115,7 @@ class ARDrone:
 		self.hover()
 		
 	def enqueue_cmd(self, cmd_name, args):
+		self.number_in_queue.value += 1
 		cmd_tup = (cmd_name, args)
 		self.cmd_queue.put(cmd_tup)
 
@@ -125,8 +134,10 @@ class ARDrone:
 				sequence_nbr += 1
 				self.send_ctrl_cmd(msg)
 				self.reset_alarm()
-				time.sleep(.03)
-			
+				self.number_in_queue.value -= 1
+				# print str.format("number in queue: {0}",self.number_in_queue.value)
+				time.sleep(.003)
+
 
 	def update_navdata(self,flying,emergency_mode):
 		while True:
@@ -147,3 +158,7 @@ def is_valid_speed(speed):
 
 def f2i(flo):
 	return struct.unpack('i',struct.pack('f',flo))[0]
+
+def clear_queue(queue):
+	while not queue.empty():
+		queue.get()
