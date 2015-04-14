@@ -43,9 +43,11 @@ class counter:
 		self.value = self.value + 1
 
 
-class state:
+class State:
 	x = 0
 	y = 0
+	totalX = 0
+	totalY = 0
 	count = 0
 	count_final = 4    # using "time python main.py" it was 11.2359 samples per ms And the drone samples every 3 ms  therefore 33 samples is good
 						# or not?
@@ -58,53 +60,72 @@ class state:
 	def inc_count(self):
 		self.count = self.count + 1
 
+	def start_new_window(self):
+		self.totalX += self.x
+		self.totalY += self.y
+		self.x = 0
+		self.y = 0
+
 	def reset(self):
 		self.count = 0
 		self.x = 0
 		self.y = 0
 
-def write_copter(copter, stat):
+def write_copter(copter):
+	stat = State()
 	def fly_copter(gyros):
 		for i in range(0, 4):
 			coords = {"x": gyros[0][i] - 1702, "y": gyros[1][i] - 1675}
 			# print coords
 
-			if abs(coords['x'])< 5 and abs(coords['y'])<5:
-				stat.inc_count()
-				return
-			stat.add_x(coords['x'])
-			stat.add_y(coords['y'])
+			if abs(coords['x'])> 5 or abs(coords['y'])>5:
+				stat.add_x(coords['x'])
+				# stat.add_y(coords['y'])
+			
 			stat.inc_count()
 
 
 
 		if stat.count >= stat.count_final:
-			sumDirect = float(abs(stat.x) + abs(stat.y))
-			if sumDirect ==0:
-				return
+			stat.start_new_window()
+			# sumDirect = float(abs(stat.x) + abs(stat.y))
+			# if sumDirect ==0:
+			# 	return
 
-			percentX = abs(stat.x / sumDirect)
-			percentY = abs(stat.y / sumDirect)
-			print (percentX, percentY)
+			# percentX = abs(stat.x / sumDirect)
+			# percentY = abs(stat.y / sumDirect)
+			# print (percentX, percentY)
 
 			#simplified threshold for x and y
 			
-			if percentX > 0.25 and percentX > percentY:
-				if stat.x < 0:
-					print 'right'
-					# copter.right()
-				else:
-					print 'left'
-					# copter.left()
+			# if percentX > 0.25 and percentX > percentY:
+			# 	if stat.x < 0:
+			# 		print 'right'
+			# 		# copter.right()
+			# 	else:
+			# 		print 'left'
+			# 		# copter.left()
 
-			elif percentY > 0.25:
-				if stat.y < 0:
-					print 'up'
-					# copter.up()
-				else:
-					print 'down'
-					# copter.down()
-			stat.reset()
+			direction = ''
+			if stat.totalX < -1500:
+				direction = 'right'
+				copter.right()
+			elif stat.totalX > 1500:
+				direction = 'left'
+				copter.left()
+			else:
+				direction = 'stop'
+
+			print str.format('{0} {1}', direction, stat.totalX)
+
+			# elif percentY > 0.25:
+			# 	if stat.y < 0:
+			# 		print 'up'
+			# 		# copter.up()
+			# 	else:
+			# 		print 'down'
+			# 		# copter.down()
+			# stat.reset()
 	return fly_copter
 
 ###
@@ -123,55 +144,56 @@ def write_copter(copter, stat):
 # Drone
 ###
 
-# drone = ardrone.ARDrone()
-# drone.setup()
-# drone.flat_trims()
-# time.sleep(3)
-# print 'drone set'
-# drone.set_speed(.1)
+drone = ardrone.ARDrone()
+drone.setup()
+drone.flat_trims()
+time.sleep(3)
+print 'drone set'
+drone.set_speed(.1)
 
-interface = EpocInterface(write_copter(None,state()))
+interface = EpocInterface(write_copter(drone))
 interface.run()
 print 'main is in control'
 
-# while True:
+while True:
 
-# 	try: 
-# 		cmd = raw_input()
-# 		if ord(cmd) == 3:# looking for ctrl + c
-# 			drone.disconect()
-# 			sys.exit(0)
+	try: 
+		cmd = raw_input()
+		if ord(cmd) == 3:# looking for ctrl + c
+			drone.land()
+			drone.disconect()
+			sys.exit(0)
 
 		
-# 		if cmd == 'g':
-# 			drone.land()
-# 		elif cmd == 't':
-# 			print "Taking off"
-# 			drone.take_off()
-# 		elif cmd == 'a':
-# 			drone.left()
-# 		elif cmd == 'd':
-# 			drone.right()
-# 		elif cmd =='w':
-# 			drone.forward()
-# 		elif cmd == 's':
-# 			drone.backward()
-# 		elif cmd == 'i':
-# 			drone.up()
-# 		elif cmd == 'k':
-# 			drone.down()
-# 		elif cmd == 'j':
-# 			drone.rotate_left()
-# 		elif cmd == 'l':
-# 			drone.rotate_right()
-# 		elif cmd == 'e':
-# 			drone.emergency_stop() 
-# 		else:
-# 			pass
-# 	except Exception as e:
-# 		print type(e)
-# 		print e.message           
-# 		print "It was Will's fault"
+		if cmd == 'g':
+			drone.land()
+		elif cmd == 't':
+			print "Taking off"
+			drone.take_off()
+		elif cmd == 'a':
+			drone.left()
+		elif cmd == 'd':
+			drone.right()
+		elif cmd =='w':
+			drone.forward()
+		elif cmd == 's':
+			drone.backward() 
+		elif cmd == 'i':
+			drone.up()
+		elif cmd == 'k':
+			drone.down()
+		elif cmd == 'j':
+			drone.rotate_left()
+		elif cmd == 'l':
+			drone.rotate_right()
+		elif cmd == 'e':
+			drone.emergency_stop() 
+		else:
+			pass
+	except Exception as e:
+		print type(e)
+		print e.message           
+		print "It was Will's fault"
 
 
 
