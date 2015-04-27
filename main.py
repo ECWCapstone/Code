@@ -2,6 +2,7 @@ from epocInterface import EpocInterface
 import ardrone
 import time
 from emotiv import Epoc
+from fake_drone import FakeDrone
 
 import sys, tty, termios
 
@@ -23,7 +24,7 @@ import sys, tty, termios
 
 def write_file_generator(file_id):
 	def write_file(str_out):
-		line = "{0} {1}\n".format(str_out[0],str_out[1])
+		line = "{0} {1} {2} {3}\n".format(str_out[0],str_out[1],str_out[2],str_out[3])
 		file_id.write(line);
 
 	return write_file
@@ -48,6 +49,10 @@ class State:
 	y = 0
 	totalX = 0
 	totalY = 0
+
+	yprev = 0
+	xprev = 0
+
 	count = 0
 	count_final = 4    # using "time python main.py" it was 11.2359 samples per ms And the drone samples every 3 ms  therefore 33 samples is good
 						# or not?
@@ -61,6 +66,10 @@ class State:
 		self.count = self.count + 1
 
 	def start_new_window(self):
+		# percentX = abs(self.totalX + self.x ) / 25000
+		# percentY = abs(self.totalY + self.y ) / 16000
+		# self.totalX += (1.5 * percentY) * self.x
+		# self.totalY += (1.5 * percentX) * self.y
 		self.totalX += self.x
 		self.totalY += self.y
 		self.x = 0
@@ -73,14 +82,38 @@ class State:
 
 def write_copter(copter):
 	stat = State()
-	def fly_copter(gyros):
-		for i in range(0, 4):
-			coords = {"x": gyros[0][i] - 1702, "y": gyros[1][i] - 1675}
-			# print coords
 
-			if abs(coords['x'])> 5 or abs(coords['y'])>5:
-				stat.add_x(coords['x'])
-				# stat.add_y(coords['y'])
+	def low_pass_filter(data, cut_off, dt, prev):		
+		prev = 0
+		alpha = dt/ (cut_off + dt)
+		data_out = [0] * len(data)
+
+
+		for i in range (0,len(data)):
+			x = data[i]
+
+			yi = alpha * x + (1 -alpha) * prev
+			data_out[i] = yi
+			prev = yi
+
+		return data_out
+
+
+	def fly_copter(gyros, times):
+		dt = (((times[3] - times[1]) + (times[2] - times[0])) / 4.0)
+
+
+		gyros[0] = low_pass_filter(map(lambda x: x - 1702.66, gyros[0]), 4, dt, stat.xprev)
+		stat.xprev = gyros[0][3]
+		gyros[1] = low_pass_filter(map(lambda x: x - 1677.6, gyros[1]), 4, dt, stat.yprev)
+		stat.yprev = gyros[1][3]
+
+		# print gyros
+
+		for i in range(0, 4):
+			x, y = (gyros[0][i], gyros[1][i])
+			stat.add_x(x)
+			stat.add_y(y)
 			
 			stat.inc_count()
 
@@ -88,44 +121,49 @@ def write_copter(copter):
 
 		if stat.count >= stat.count_final:
 			stat.start_new_window()
-			# sumDirect = float(abs(stat.x) + abs(stat.y))
-			# if sumDirect ==0:
-			# 	return
 
-			# percentX = abs(stat.x / sumDirect)
-			# percentY = abs(stat.y / sumDirect)
-			# print (percentX, percentY)
-
-			#simplified threshold for x and y
+			windowX = 50
+			windowY = 30
 			
-			# if percentX > 0.25 and percentX > percentY:
-			# 	if stat.x < 0:
-			# 		print 'right'
-			# 		# copter.right()
-			# 	else:
-			# 		print 'left'
-			# 		# copter.left()
+			directions = {
+				"up": False,
+				"down": False,
+				"left": False,
+				"right": False
+			}
 
-			direction = ''
-			if stat.totalX < -1500:
-				direction = 'right'
-				copter.right()
-			elif stat.totalX > 1500:
-				direction = 'left'
+			direction = 'stop'
+
+			if stat.totalX < -windowX:
+				directions["right"] = True
+				direction = "right"
+				stat.totalY = 0
+			elif stat.totalX > windowX:
+				directions["left"] = True
+				direction = "left"
+				stat.totalY = 0
+
+
+			if stat.totalY < -windowY:
+				directions["up"] = True
+				direction = "up"
+				stat.totalX = 0
+			elif stat.totalY > windowY:
+				directions["down"] = True
+				direction = "down"
+				stat.totalX = 0
+
+			if directions["up"]:
+				copter.up()
+			elif directions["down"]:
+				copter.down()
+			elif directions["left"]:
 				copter.left()
-			else:
-				direction = 'stop'
+			elif directions["right"]:
+				copter.right()
 
-			print str.format('{0} {1}', direction, stat.totalX)
+			print str.format('{0} {1} {2}', direction, stat.totalX, stat.totalY)
 
-			# elif percentY > 0.25:
-			# 	if stat.y < 0:
-			# 		print 'up'
-			# 		# copter.up()
-			# 	else:
-			# 		print 'down'
-			# 		# copter.down()
-			# stat.reset()
 	return fly_copter
 
 ###
@@ -151,9 +189,13 @@ time.sleep(3)
 print 'drone set'
 drone.set_speed(.1)
 
-interface = EpocInterface(write_copter(drone))
-interface.run()
-print 'main is in control'
+# drone = FakeDrone()
+
+# interface = EpocInterface(write_copter(drone))
+# interface.run()
+
+
+# # print 'main is in control'
 
 while True:
 
@@ -180,8 +222,16 @@ while True:
 			drone.backward() 
 		elif cmd == 'i':
 			drone.up()
+		elif cmd == 'u':
+			drone.up_left()
+		elif cmd == 'o':
+			drone.up_right()
 		elif cmd == 'k':
 			drone.down()
+		elif cmd == 'm':
+			drone.down_left()
+		elif cmd == '.':
+			drone.down_right()
 		elif cmd == 'j':
 			drone.rotate_left()
 		elif cmd == 'l':
@@ -200,14 +250,30 @@ while True:
 ###
 # File write
 ###
-#file_id = open('down.txt','w')
+# file_id = open('sample.txt','w')
 # interface = EpocInterface(write_file_generator(file_id))
-#file_id.close()
+# interface.run()
+# file_id.close()
 
 ###
 # Simple print
 ###
+def pitch_print(arr_arr):
+	print arr_arr[1]
+
+# interface = EpocInterface(pitch_print)
+# interface.run()
+ 
+def print_XY(arr_arr):
+	for i in range(0,4):
+		print str.format('{0} {1}',arr_arr[0][i],arr_arr[1][i] )
+
+# interface = EpocInterface(print_XY)
 # interface = EpocInterface()
+# interface.run()
+
+
+
 
 ###
 # counter

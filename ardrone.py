@@ -24,6 +24,7 @@ class ARDrone:
 		self.status_socket = socket.socket()
 		self.is_flying = mp.Value('b', False)
 		self.is_emergency_mode = mp.Value('b', False)
+		self.is_communicating = mp.Value('b',False)
 
 
 	def setup(self):
@@ -33,7 +34,7 @@ class ARDrone:
 		self.status_socket.sendto("\x01\x00\x00\x00", (self.ip_address, STATUS_PORT))
 		
 		p = mp.Process(target=self.send_from_queue, args=(self.cmd_queue,))  # Queue dispatch thread 
-		p2 = mp.Process(target=self.update_navdata, args=(self.is_flying,self.is_emergency_mode))  # Nav data listener thread
+		p2 = mp.Process(target=self.update_navdata, args=(self.is_flying,self.is_emergency_mode,self.is_communicating))  # Nav data listener thread
 
 		self.processes.append(p)
 		self.processes.append(p2)
@@ -48,12 +49,13 @@ class ARDrone:
 		signal.setitimer(signal.ITIMER_REAL, 1.8)
 		
 
-	def __set_navdata(self,flying,emergency_mode):
+	def __set_navdata(self,flying,emergency_mode, is_communicating):
 		drone_info = dict()
  		data = self.status_socket.recv(65535)
 		navdata = struct.unpack_from("IIII", data, 0)
 
 		flying = navdata[1] & 1 == 1
+		is_communicating = navdata[1] & 0x40000000 == 0 
 		emergency_mode = navdata[1] & 0x80000000 == 1
 
 	def flat_trims(self):    # Levels the trim for flight !!! Must be on the ground, level!!!
@@ -87,6 +89,18 @@ class ARDrone:
 	def up(self):
 		self.enqueue_cmd("PCMD", self.movement_cmd(0,0,self.speed,0))
 
+	def up_left(self):
+		self.enqueue_cmd("PCMD",self.movement_cmd(-self.speed,0,self.speed,0))
+
+	def down_left(self):
+		self.enqueue_cmd("PCMD",self.movement_cmd(-self.speed,0,-self.speed,0))		
+
+	def up_right(self):
+		self.enqueue_cmd("PCMD",self.movement_cmd(self.speed,0,self.speed,0))
+
+	def down_right(self):
+		self.enqueue_cmd("PCMD",self.movement_cmd(self.speed,0,-self.speed,0))
+		
 	def down(self):
 		self.enqueue_cmd("PCMD", self.movement_cmd(0,0,-self.speed,0))
 
@@ -128,6 +142,12 @@ class ARDrone:
 	def send_from_queue(self,queue):
 		sequence_nbr = 1;
 		while True:
+			if not self.is_communicating:
+				self.ctrl_socket.close()
+				self.ctrl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+				sequence_nbr = 1
+				print 'Connect to Quad-copter Reset'
+
 			if not queue.empty():
 				cmd_tup = queue.get()
 				msg = "AT*%s=%i%s\r" % (cmd_tup[0],sequence_nbr,cmd_tup[1])
@@ -139,9 +159,9 @@ class ARDrone:
 				time.sleep(.003)
 
 
-	def update_navdata(self,flying,emergency_mode):
+	def update_navdata(self,flying,emergency_mode,is_communicating):
 		while True:
-			self.__set_navdata(flying,emergency_mode)
+			self.__set_navdata(flying,emergency_mode,is_communicating)
 			time.sleep(.25)
 
 	def disconect(self):

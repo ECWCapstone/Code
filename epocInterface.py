@@ -7,8 +7,8 @@ from emotiv import Epoc
 
 class EpocInterface:
 
-	def print_me(str_input):
-		print str_input
+	def print_me(str_input, times):
+		print (str_input, times) 
 
 	def __init__(self, funct=print_me):
 		self.handler_funct = funct
@@ -31,8 +31,8 @@ class EpocInterface:
 		print 'Connected'
 		while True:
 			gyros = epoc.get_gyros()
-			# times = epoc.times
-			funct(gyros)
+			times = epoc.times
+			funct(gyros, times)
 
 	def run(self):
 		# threading.Thread(target=self.sample_gyro_data, args=(self.handler_funct,)).start()
