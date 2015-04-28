@@ -54,9 +54,9 @@ class ARDrone:
  		data = self.status_socket.recv(65535)
 		navdata = struct.unpack_from("IIII", data, 0)
 
-		flying = navdata[1] & 1 == 1
-		is_communicating = navdata[1] & 0x40000000 == 0 
-		emergency_mode = navdata[1] & 0x80000000 == 1
+		flying.value = navdata[1] & 1 == 1
+		is_communicating.value = navdata[1] & 0x40000000 == 0 
+		emergency_mode.value = navdata[1] & 0x80000000 == 1
 
 	def flat_trims(self):    # Levels the trim for flight !!! Must be on the ground, level!!!
 		self.enqueue_cmd("FTRIM", "")
@@ -73,6 +73,11 @@ class ARDrone:
 		self.number_in_queue.value = 0
 		self.enqueue_cmd("REF", (",%d" % land_int))
 		
+	def toggle_flying(self):
+		if self.is_flying.value:
+			self.land()
+		else:
+			self.take_off()
 
 	def emergency_stop(self):
 		stop_int = 0b10001010101000000000100000000

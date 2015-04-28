@@ -25,3 +25,6 @@ class FakeDrone():
 
 	def left(self):
 		pass
+
+	def toggle_flying(self):
+		pass

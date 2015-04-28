@@ -3,6 +3,7 @@ import ardrone
 import time
 from emotiv import Epoc
 from fake_drone import FakeDrone
+import numpy
 
 import sys, tty, termios
 
@@ -50,48 +51,40 @@ class State:
 	totalX = 0
 	totalY = 0
 
-	yprev = 0
-	xprev = 0
+	prevTime = 0
 
-	count = 0
-	count_final = 4    # using "time python main.py" it was 11.2359 samples per ms And the drone samples every 3 ms  therefore 33 samples is good
-						# or not?
+	alternate_flying_mode = False
+
 	def add_x(self,newX):
 		self.x = newX + self.x
 
 	def add_y(self,newY):
 		self.y = newY + self.y
 
-	def inc_count(self):
-		self.count = self.count + 1
-
 	def start_new_window(self):
-		# percentX = abs(self.totalX + self.x ) / 25000
-		# percentY = abs(self.totalY + self.y ) / 16000
-		# self.totalX += (1.5 * percentY) * self.x
-		# self.totalY += (1.5 * percentX) * self.y
 		self.totalX += self.x
 		self.totalY += self.y
 		self.x = 0
 		self.y = 0
 
 	def reset(self):
-		self.count = 0
-		self.x = 0
-		self.y = 0
+		self.totalX = 0
+		self.totalY = 0
+
 
 def write_copter(copter):
 	stat = State()
 
-	def low_pass_filter(data, cut_off, dt, prev):		
+	def low_pass_filter(data, times, cut_off, prevTime):		
 		prev = 0
-		alpha = dt/ (cut_off + dt)
 		data_out = [0] * len(data)
 
 
 		for i in range (0,len(data)):
 			x = data[i]
-
+			dt = times[i] - prevTime
+			prevTime = times[i]
+			alpha = dt / (cut_off + dt) 
 			yi = alpha * x + (1 -alpha) * prev
 			data_out[i] = yi
 			prev = yi
@@ -99,70 +92,95 @@ def write_copter(copter):
 		return data_out
 
 
-	def fly_copter(gyros, times):
-		dt = (((times[3] - times[1]) + (times[2] - times[0])) / 4.0)
+	def fly_copter(data, gyros, times):
+		gyros[0] = low_pass_filter(map(lambda x: x - 1702.66, gyros[0]), times, 4, stat.prevTime)
+		gyros[1] = low_pass_filter(map(lambda x: x - 1677.6, gyros[1]), times, 4, stat.prevTime)
+		stat.prevTime = times[-1]
 
+		max_af3 = max(data[0])
+		
 
-		gyros[0] = low_pass_filter(map(lambda x: x - 1702.66, gyros[0]), 4, dt, stat.xprev)
-		stat.xprev = gyros[0][3]
-		gyros[1] = low_pass_filter(map(lambda x: x - 1677.6, gyros[1]), 4, dt, stat.yprev)
-		stat.yprev = gyros[1][3]
+		max_af4 = max(data[-1])
+		
 
+		max_f3 = max(data[2])
+
+		max_f4 = max(data[-3])
+
+		max_overal =  max(max_af3, max_af4, max_f3, max_f4))
+
+		if max_overal > 6000:
+			if max_overal == max_af3:			
+				print "Reset dead zone"
+				stat.reset()
+
+			elif max_overal == max_af4:
+				print "Toggle Take off"
+				drone.toggle_flying()
+
+			elif max_overal == max_f3:
+				print "Alt Fling mode"
+				stat.alternate_flying_mode = not stat.alternate_flying_mode
+
+			else:
+				pass
+
+		if m > 6000:
+			print "Toggling flying state"
+			drone.toggle_flying()
+			return
 		# print gyros
 
-		for i in range(0, 4):
+		for i in range(0, len(times)):
 			x, y = (gyros[0][i], gyros[1][i])
 			stat.add_x(x)
 			stat.add_y(y)
 			
-			stat.inc_count()
 
 
+		stat.start_new_window()
 
-		if stat.count >= stat.count_final:
-			stat.start_new_window()
+		windowX = 50
+		windowY = 30
+		
+		directions = {
+			"up": False,
+			"down": False,
+			"left": False,
+			"right": False
+		}
 
-			windowX = 50
-			windowY = 30
-			
-			directions = {
-				"up": False,
-				"down": False,
-				"left": False,
-				"right": False
-			}
+		direction = 'stop'
 
-			direction = 'stop'
-
-			if stat.totalX < -windowX:
-				directions["right"] = True
-				direction = "right"
-				stat.totalY = 0
-			elif stat.totalX > windowX:
-				directions["left"] = True
-				direction = "left"
-				stat.totalY = 0
+		if stat.totalX < -windowX:
+			directions["right"] = True
+			direction = "right"
+			stat.totalY = 0
+		elif stat.totalX > windowX:
+			directions["left"] = True
+			direction = "left"
+			stat.totalY = 0
 
 
-			if stat.totalY < -windowY:
-				directions["up"] = True
-				direction = "up"
-				stat.totalX = 0
-			elif stat.totalY > windowY:
-				directions["down"] = True
-				direction = "down"
-				stat.totalX = 0
+		if stat.totalY < -windowY:
+			directions["up"] = True
+			direction = "up"
+			stat.totalX = 0
+		elif stat.totalY > windowY:
+			directions["down"] = True
+			direction = "down"
+			stat.totalX = 0
 
-			if directions["up"]:
-				copter.up()
-			elif directions["down"]:
-				copter.down()
-			elif directions["left"]:
-				copter.left()
-			elif directions["right"]:
-				copter.right()
+		if directions["up"]:
+			copter.up()
+		elif directions["down"]:
+			copter.down()
+		elif directions["left"]:
+			copter.left()
+		elif directions["right"]:
+			copter.right()
 
-			print str.format('{0} {1} {2}', direction, stat.totalX, stat.totalY)
+		print str.format('{0} {1} {2}', direction, stat.totalX, stat.totalY)
 
 	return fly_copter
 
@@ -191,8 +209,9 @@ drone.set_speed(.1)
 
 # drone = FakeDrone()
 
-# interface = EpocInterface(write_copter(drone))
-# interface.run()
+interface = EpocInterface(write_copter(drone))
+# interface = EpocInterface()
+interface.start()
 
 
 # # print 'main is in control'
@@ -252,7 +271,7 @@ while True:
 ###
 # file_id = open('sample.txt','w')
 # interface = EpocInterface(write_file_generator(file_id))
-# interface.run()
+# interface.start()
 # file_id.close()
 
 ###
@@ -262,7 +281,7 @@ def pitch_print(arr_arr):
 	print arr_arr[1]
 
 # interface = EpocInterface(pitch_print)
-# interface.run()
+# interface.start()
  
 def print_XY(arr_arr):
 	for i in range(0,4):
@@ -270,7 +289,7 @@ def print_XY(arr_arr):
 
 # interface = EpocInterface(print_XY)
 # interface = EpocInterface()
-# interface.run()
+# interface.start()
 
 
 
@@ -280,4 +299,4 @@ def print_XY(arr_arr):
 ###
 
 # interface = EpocInterface(write_count_func(counter()))
-# interface.run()
+# interface.start()
