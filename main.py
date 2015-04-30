@@ -51,9 +51,19 @@ class State:
 	totalX = 0
 	totalY = 0
 
+	last_pressed_window = 0
+	last_direction = ''
+
 	prevTime = 0
 
 	alternate_flying_mode = False
+
+	def toggle_alt_flying_mode(self):
+		if self.last_pressed_window > 10:
+			self.alternate_flying_mode = not self.alternate_flying_mode
+			print "Alt Fling mode"
+			self.last_pressed_window = 0
+	
 
 	def add_x(self,newX):
 		self.x = newX + self.x
@@ -66,6 +76,7 @@ class State:
 		self.totalY += self.y
 		self.x = 0
 		self.y = 0
+		self.last_pressed_window += 1
 
 	def reset(self):
 		self.totalX = 0
@@ -107,7 +118,7 @@ def write_copter(copter):
 
 		max_f4 = max(data[-3])
 
-		max_overal =  max(max_af3, max_af4, max_f3, max_f4))
+		max_overal =  max(max_af3, max_af4, max_f3, max_f4)
 
 		if max_overal > 6000:
 			if max_overal == max_af3:			
@@ -117,19 +128,13 @@ def write_copter(copter):
 			elif max_overal == max_af4:
 				print "Toggle Take off"
 				drone.toggle_flying()
+				return
 
 			elif max_overal == max_f3:
-				print "Alt Fling mode"
-				stat.alternate_flying_mode = not stat.alternate_flying_mode
+				stat.toggle_alt_flying_mode()
 
 			else:
 				pass
-
-		if m > 6000:
-			print "Toggling flying state"
-			drone.toggle_flying()
-			return
-		# print gyros
 
 		for i in range(0, len(times)):
 			x, y = (gyros[0][i], gyros[1][i])
@@ -172,15 +177,23 @@ def write_copter(copter):
 			stat.totalX = 0
 
 		if directions["up"]:
-			copter.up()
+			if stat.alternate_flying_mode:
+				copter.backward()
+			else:
+				copter.up()
 		elif directions["down"]:
-			copter.down()
+			if stat.alternate_flying_mode:
+				copter.forward()
+			else:
+				copter.down()
 		elif directions["left"]:
 			copter.left()
 		elif directions["right"]:
 			copter.right()
 
-		print str.format('{0} {1} {2}', direction, stat.totalX, stat.totalY)
+		if not stat.last_direction == direction:
+			stat.last_direction = direction
+			print str.format('{0} {1} {2}', direction, stat.totalX, stat.totalY)
 
 	return fly_copter
 

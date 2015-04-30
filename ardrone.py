@@ -167,7 +167,7 @@ class ARDrone:
 	def update_navdata(self,flying,emergency_mode,is_communicating):
 		while True:
 			self.__set_navdata(flying,emergency_mode,is_communicating)
-			time.sleep(.25)
+			time.sleep(.03)
 
 	def disconect(self):
 
